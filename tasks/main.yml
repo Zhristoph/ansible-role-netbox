@@ -1,0 +1,53 @@
+---
+- name: Know your facts by define them
+  tags: netbox
+  set_fact:
+    netboxEnvDir: "{{ netboxDir }}/env"
+    netboxRepoDir: "{{ netboxDir }}/repo"
+    netboxSecrets: "{{ netboxDefaultSecrets | combine( netboxLocalSecrets ) }}"
+    netboxOperations: "{{ netboxDefaultOperations | combine( netboxLocalOperations ) }}"
+
+- name: "Create {{ netboxDir }} directories"
+  tags: netbox
+  file:
+    dest: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o-rwx"
+  loop:
+   - "{{ netboxDir }}"
+   - "{{ netboxEnvDir }}"
+   - "{{ netboxRepoDir }}"
+
+- name: "Checkout {{ netboxRepo }}"
+  tags: netbox
+  git:
+    repo: "{{ netboxRepo }}"
+    dest: "{{ netboxRepoDir }}"
+    update: yes
+
+- name: Deploy config for Netbox
+  tags: netbox
+  template:
+    src: "repo/{{ item }}"
+    dest: "{{ netboxRepoDir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "u=r,g=r,o-rwx"
+  with_items:
+    - docker-compose.override.yml
+
+- name: Deploy Netbox env
+  tags: netbox
+  template:
+    src: "env/{{ item }}"
+    dest: "{{ netboxEnvDir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "u=r,g-rwx,o-rwx"
+  with_items:
+    - netbox.env
+    - postgres.env
+    - redis-cache.env
+    - redis.env

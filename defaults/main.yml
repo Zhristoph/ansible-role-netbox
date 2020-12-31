@@ -1,0 +1,61 @@
+netboxDir: /srv/netbox
+netboxRepo: https://github.com/netbox-community/netbox-docker
+netboxVersion: v2.9
+netboxDockerOverride: |
+  version: '3.4'
+  services:
+    netbox: &netbox
+      env_file: {{ netboxEnvDir }}/netbox.env
+  
+    # postgres
+    postgres:
+      env_file: {{ netboxEnvDir }}/postgres.env
+  
+    # redis
+    redis:
+      env_file: {{ netboxEnvDir }}/redis.env
+    redis-cache:
+      env_file: {{ netboxEnvDir }}/redis-cache.env
+
+netboxDefaultSecrets:
+  SUPERUSER_PASSWORD: KeepThisReallySecretOrSkip32wqe
+  SUPERUSER_API_TOKEN: 0123456789abcdef0123456789abcdef01234567
+  DB_PASSWORD: KeepThisSecretJ5brHrAXFLQSif0K
+  SECRET_KEY: KeepThisSecretr8OwDznj!!dci#P9ghmRfdu1Ysxm0AiPeDCQhKE+N_rClfWNj
+  EMAIL_PASSWORD: KeepThisSecretHKSl3imd
+  NAPALM_PASSWORD: KeepThisSecretsehf3098sfh23
+  REDIS_PASSWORD: KeepThisSecretH733Kdjndks81
+  REDIS_CACHE_PASSWORD: KeepThisSecrett4Ph722qJ5QHeQ1qfu36
+  AUTH_LDAP_BIND_PASSWORD: KeepThisSecretOLHJOIdskd0834
+
+netboxLocalSecrets: []
+
+netboxDefaultOperations:
+  ALLOWED_HOSTS:
+  DB_NAME: netbox
+  DB_USER: netbox
+  DB_HOST: postgres
+  EMAIL_SERVER: localhost
+  EMAIL_PORT: 25
+  EMAIL_USERNAME: netbox
+  EMAIL_TIMEOUT: 5
+  EMAIL_FROM: netbox@bar.com
+  # EMAIL_USE_SSL and EMAIL_USE_TLS are mutually exclusive, i.e. they can't both be `true`!
+  EMAIL_USE_SSL: false
+  EMAIL_USE_TLS: false
+  EMAIL_SSL_CERTFILE: 
+  EMAIL_SSL_KEYFILE: 
+  MAX_PAGE_SIZE: 1000
+  NAPALM_USERNAME: palma
+  SUPERUSER_NAME: admin
+  SUPERUSER_EMAIL: admin@example.com
+  SKIP_SUPERUSER: false
+  REDIS_HOST: redis
+  REDIS_DATABASE: 0
+  REDIS_SSL: false
+  REDIS_CACHE_HOST: redis-cache
+  REDIS_CACHE_DATABASE: 1
+  REDIS_CACHE_SSL: false
+
+netboxLocalOperations: []
+

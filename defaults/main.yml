@@ -1,10 +1,11 @@
 netboxDir: /srv/netbox
 netboxRepo: https://github.com/netbox-community/netbox-docker
-netboxVersion: v2.9
+netboxVersion: v2.10
 netboxDockerOverride: |
   version: '3.4'
   services:
     netbox: &netbox
+      image: netboxcommunity/netbox:{{ netboxVersion }}
       env_file: {{ netboxEnvDir }}/netbox.env
   
     # postgres

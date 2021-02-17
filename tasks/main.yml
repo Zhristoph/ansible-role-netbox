@@ -38,6 +38,17 @@
   with_items:
     - docker-compose.override.yml
 
+- name: Deploy start.sh for Netbox
+  tags: netbox
+  template:
+    src: "{{ item }}"
+    dest: "{{ netboxDir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "u=rx,g=rx,o-rwx"
+  with_items:
+    - start.sh
+
 - name: Deploy Netbox env
   tags: netbox
   template:

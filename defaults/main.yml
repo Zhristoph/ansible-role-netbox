@@ -7,7 +7,10 @@ netboxDockerOverride: |
     netbox: &netbox
       image: netboxcommunity/netbox:{{ netboxVersion }}
       env_file: {{ netboxEnvDir }}/netbox.env
-  
+
+    netbox-worker:
+      <<: *netbox
+
     # postgres
     postgres:
       env_file: {{ netboxEnvDir }}/postgres.env

@@ -4,13 +4,45 @@ netboxVersion: v2.10
 netboxDockerOverride: |
   version: '3.4'
   services:
+    traefik:
+      image: "traefik:v2.4"
+      network_mode: "host"
+      command:
+        - "--api.insecure=true"
+        - "--providers.docker=true"
+        - "--providers.docker.exposedbydefault=false"
+        - "--entrypoints.web.address=:80"
+        - "--entrypoints.websecure.address=:443"
+        - "--certificatesresolvers.mySite.acme.dnschallenge=true"
+        - "--certificatesresolvers.mySite.acme.dnschallenge.provider=myDNSprovider"
+        - "--certificatesresolvers.mySite.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+        - "--certificatesresolvers.mySite.acme.email=postmaster@mydomain.com"
+        - "--certificatesresolvers.mySite.acme.storage=/letsencrypt/acme.json"
+      environment:
+        - "MYDNSPROVIDERSECRETS=ExampleEnviromentVariableOrUseSecrets"
+      volumes:
+        - "/srv/netbox/letsencrypt:/letsencrypt"
+        - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  
     netbox: &netbox
       image: netboxcommunity/netbox:{{ netboxVersion }}
       env_file: {{ netboxEnvDir }}/netbox.env
-
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.netbox.rule=Host(`netbox01.TLD`)"
+        - "traefik.http.routers.netbox.entrypoints=websecure"
+        - "traefik.http.routers.netbox.tls.certresolver=mySite"
     netbox-worker:
       <<: *netbox
-
+      depends_on:
+        - redis
+      entrypoint:
+        - /opt/netbox/venv/bin/python
+        - /opt/netbox/netbox/manage.py
+      command:
+        - rqworker
+      ports: []
+  
     # postgres
     postgres:
       env_file: {{ netboxEnvDir }}/postgres.env
@@ -35,7 +67,7 @@ netboxDefaultSecrets:
 netboxLocalSecrets: []
 
 netboxDefaultOperations:
-  ALLOWED_HOSTS:
+  ALLOWED_HOSTS: localhost
   DB_NAME: netbox
   DB_USER: netbox
   DB_HOST: postgres
@@ -47,8 +79,8 @@ netboxDefaultOperations:
   # EMAIL_USE_SSL and EMAIL_USE_TLS are mutually exclusive, i.e. they can't both be `true`!
   EMAIL_USE_SSL: false
   EMAIL_USE_TLS: false
-  EMAIL_SSL_CERTFILE: 
-  EMAIL_SSL_KEYFILE: 
+  EMAIL_SSL_CERTFILE:
+  EMAIL_SSL_KEYFILE:
   MAX_PAGE_SIZE: 1000
   NAPALM_USERNAME: palma
   SUPERUSER_NAME: admin
